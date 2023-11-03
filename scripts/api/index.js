@@ -39,7 +39,7 @@ export class StructureData {
         this.player = player;
         this.id = player.id;
         this.location = minLocation;
-        this.count = JSON.parse(player.getDynamicProperty("structures")).slice(-1)[0]?.count ?? 0;
+        this.count = JSON.parse(player.getDynamicProperty("structures") ?? "[]").slice(-1)[0]?.count ?? 0;
         this.count++;
         this.name = `{\\"id\\";${this.id},\\"count\\";${this.count},\\"location\\";{\\"x\\";${this.location.x},\\"y\\";${this.location.y},\\"z\\";${this.location.z}}}`;
     }
@@ -72,6 +72,7 @@ export function showRange(player, particleOptions = { id: "minecraft:endrod" }) 
     if (!(player instanceof Player)) return;
     const start = player.getDynamicProperty("start");
     const end = player.getDynamicProperty("end");
+    if (start === undefined || end === undefined) return;
     const min = Vector.min(start, end);
     const max = Vector.max(start, end);
     if (!(start && end)) return;

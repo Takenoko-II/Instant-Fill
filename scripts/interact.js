@@ -2,7 +2,7 @@ import { world, system } from "@minecraft/server";
 
 import { isInsFillTool } from "./api/index";
 
-import { higherOrderFunctions } from "../@tak/extender";
+import { higherOrderFunctions } from "./@tak/extender";
 
 world.beforeEvents.itemUseOn.subscribe(event => {
     if (!isInsFillTool(event.itemStack)) return;

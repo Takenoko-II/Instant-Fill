@@ -10,6 +10,10 @@ world.afterEvents.itemUse.subscribe(event => {
     const end = event.source.getDynamicProperty("end");
     const id = event.source.getDynamicProperty("blockId");
     const states = JSON.parse(event.source.getDynamicProperty("blockStates") ?? "{}");
+    if (start === undefined || end === undefined) {
+        event.source.sendMessage("§cブロックを左クリックで範囲を設定してください");
+        return;
+    }
     const { x: x1, y: y1, z: z1 } = Vector.min(start, end);
     const { x: x2, y: y2, z: z2 } = Vector.max(start, end);
     system.runTimeout(() => {
