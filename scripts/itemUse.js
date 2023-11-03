@@ -47,11 +47,16 @@ world.afterEvents.itemUse.subscribe(event => {
             }
 
             const newStructure = new StructureData(event.source, { x: x1, y: y1, z: z1 });
-            event.source.runCommand(`structure save "${newStructure.name}" ${x1} ${y1} ${z1} ${x2} ${y2} ${z2} false disk true`);
-            newStructure.save();
-            event.source.sendMessage("地形を保存しました §7(保存id: " + newStructure.count.toString() + ")");
+            const { successCount } = event.source.runCommand(`structure save "${newStructure.name}" ${x1} ${y1} ${z1} ${x2} ${y2} ${z2} false disk true`);
+            if (successCount > 0) {
+                newStructure.save();
+                event.source.sendMessage("地形を保存しました §7(保存id: " + newStructure.count.toString() + ")");
 
-            event.source.dimension.fillBlocks(start, end, block, options);
+                event.source.dimension.fillBlocks(start, end, block, options);
+            }
+            else {
+                event.source.sendMessage("§c地形の保存に失敗したため、fillをキャンセルしました");
+            }
         });
     });
 });
