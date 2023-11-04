@@ -167,7 +167,7 @@ export class ChatCommandExecuteData {
         return this.list.find(arg => arg.id === id)?.value;
     }
     getAllArgs() {
-        return this.list;
+        return this.list.map(arg => arg.value);
     }
     get sendOutput() {
         return this.sendOutputInternal;

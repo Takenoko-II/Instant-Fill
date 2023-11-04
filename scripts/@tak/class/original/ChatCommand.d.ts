@@ -92,7 +92,7 @@ export class ChatCommand {
     /**
      * 登録されているコマンドのリスト。
      */
-    readonly static list: ChatCommand[];
+    static readonly list: ChatCommand[];
     /**
      * コマンドを使えるように登録する。
      * @param command 登録するコマンドのデータ。

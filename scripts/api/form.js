@@ -8,7 +8,7 @@ export function openMainForm(player) {
     const start = player.getDynamicProperty("start");
     const end = player.getDynamicProperty("end");
     const id = player.getDynamicProperty("blockId");
-    const states = JSON.parse(player.getDynamicProperty("blockStates" ?? "{}"));
+    const states = JSON.parse(player.getDynamicProperty("blockStates") ?? "{}");
     const idReplaced = player.getDynamicProperty("blockIdReplaced");
     const statesReplaced = JSON.parse(player.getDynamicProperty("blockStatesReplaced") ?? "{}");
     if (start === undefined || end === undefined) {
@@ -104,16 +104,16 @@ export function openSettingForm(player) {
             case 1: {
                 const description = [
                     "fillするブロック: ",
-                    "    id: " + player.getDynamicProperty("blockId"),
-                    "    states: " + player.getDynamicProperty("blockStates"),
+                    "    id: " + (player.getDynamicProperty("blockId") ?? ""),
+                    "    states: " + (player.getDynamicProperty("blockStates") ?? "{}"),
                     "置き換えられるブロック: ",
-                    "    id: " + player.getDynamicProperty("blockIdReplaced"),
-                    "    states: " + player.getDynamicProperty("blockStatesReplaced")
+                    "    id: " + (player.getDynamicProperty("blockIdReplaced") ?? ""),
+                    "    states: " + (player.getDynamicProperty("blockStatesReplaced") ?? "{}")
                 ];
                 const specialBlockIds = [undefined, "minecraft:air", "minecraft:water", "minecraft:flowing_water", "minecraft:lava", "minecraft:flowing_lava", "minecraft:light_block", "minecraft:structure_void"];
                 new ModalFormData()
                 .title("Instant Fill")
-                .dropdown(description.join("\n") + "\n\nスポイトするブロック", ["fillするブロック", "置き換えられるブロック"], Number(player.getDynamicProperty("copyReplacedBlock")))
+                .dropdown(description.join("\n") + "\n\nスポイトするブロック", ["fillするブロック", "置き換えられるブロック"], Number(player.getDynamicProperty("copyReplacedBlock") ?? 0))
                 .dropdown("特殊ブロックのスポイト", ["スポイトしない", "空気 / minecraft:air", "水 / minecraft:water", "流水 / minecraft:flowing_water", "溶岩 / minecraft:lava", "溶岩流 / minecraft:flowing_lava", "ライトブロック / minecraft:light_block", "ストラクチャーヴォイド / minecraft:structure_void"])
                 .show(player).then(({ canceled, formValues }) => {
                     if (canceled) return;
