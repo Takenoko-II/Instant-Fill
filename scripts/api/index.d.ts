@@ -25,3 +25,17 @@ interface ParticleOptions {
     readonly variables: MolangVariableMap;
     readonly chance: number;
 }
+
+export function openMainForm(player: Player): void;
+
+export function openSettingForm(player: Player): void;
+
+export const particleSettingsDefault: {
+    id: string,
+    show: boolean,
+    color: {
+        r: number,
+        g: number,
+        b: number
+    }
+};

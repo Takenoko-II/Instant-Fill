@@ -5,7 +5,9 @@ import { isInsFillTool } from "./api/index";
 world.beforeEvents.playerBreakBlock.subscribe(event => {
     if (!isInsFillTool(event.itemStack)) return;
     event.cancel = true;
+    if (event.player.getDynamicProperty("interactCooldown") > 0) return;
     system.runTimeout(() => {
+        event.player.setDynamicProperty("interactCooldown", 10);
         event.player.setDynamicProperty("start", event.player.getDynamicProperty("end"));
         event.player.setDynamicProperty("end", event.block.location);
         event.player.playSound("random.click", { volume: 10, pitch: 1.5 });

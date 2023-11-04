@@ -1,7 +1,5 @@
 import { ItemStack, Player, Vector } from "@minecraft/server";
 
-import { Random } from "../@tak/extender";
-
 export function isInsFillTool(itemStack) {
     if (!(itemStack instanceof ItemStack)) return false;
     if (itemStack.getLore()[0] === "§9@Instant-Fill") return true;
@@ -75,15 +73,29 @@ export function showRange(player, particleOptions = { id: "minecraft:endrod" }) 
     if (start === undefined || end === undefined) return;
     const min = Vector.min(start, end);
     const max = Vector.max(start, end);
-    if (!(start && end)) return;
-    for (let x = min.x; x <= max.x; x++) {
-        for (let y = min.y; y <= max.y; y++) {
-            for (let z = min.z; z <= max.z; z++) {
-                const target = Vector.add({ x, y, z }, { x: 0.5, y: 0.5, z: 0.5 });
-                if (player.dimension.getBlock(target)?.isAir && Random.chance(particleOptions?.chance ?? 0.5)) {
-                    player.dimension.spawnParticle(particleOptions.id, target, particleOptions?.variables);
-                }
-            }
+    if (!(min && max)) return;
+    const vectors = [];
+    for (let x = min.x; x <= max.x + 1; x+=0.5) {
+        vectors.push({ x, y: min.y, z: min.z }, { x, y: min.y, z: max.z + 1 }, { x, y: max.y + 1, z: min.z }, { x, y: max.y + 1, z: max.z + 1 });
+    }
+    for (let y = min.y; y <= max.y + 1; y+=0.5) {
+        vectors.push({ x: min.x, y, z: min.z }, { x: min.x, y, z: max.z + 1 }, { x: max.x + 1, y, z: min.z }, { x: max.x + 1, y, z: max.z + 1 });
+    }
+    for (let z = min.z; z <= max.z + 1; z+=0.5) {
+        vectors.push({ x: min.x, y: min.y, z }, { x: min.x, y: max.y + 1, z }, { x: max.x + 1, y: min.y, z }, { x: max.x + 1, y: max.y + 1, z });
+    }
+    for (const vector of vectors) {
+        if (player.dimension.getBlock(vector)) {
+            player.dimension.spawnParticle(particleOptions.id, vector, particleOptions?.variables);
         }
     }
 }
+
+export { openMainForm, openSettingForm } from "./form";
+
+export const particleSettingsDefault = {
+    id: "minecraft:colored_flame_particle",
+    show: true,
+    color: { r: 0, g: 1, b: 0 },
+    space: 1.0
+};

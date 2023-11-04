@@ -210,7 +210,8 @@ export class ChatCommand {
         if (!(source instanceof Dimension || source instanceof Player || source instanceof Entity)) throw new Error("sourceはDimensionかPlayerかEntityである必要があります");
         if (typeof command !== "string") throw new Error("commandは文字列である必要があります");
         const targetType = ChatCommandType.list.find(type => type.check(command));
-        return targetType.parse(source, command);
+        if (targetType) return targetType.parse(source, command);
+        else return null;
     }
 }
 
