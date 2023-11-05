@@ -1,12 +1,55 @@
 import { world, system, Dimension, Player, Entity } from "@minecraft/server";
 
+import { ActionFormData } from "@minecraft/server-ui";
+
 import { StringFunctions, numberFunctions } from "../../../@tak/extender";
 
+function permissionCheck(source, permission) {
+    if (source instanceof Dimension) {
+        switch (permission) {
+            case "console":
+            case "operator":
+            case "member":
+                return true;
+            default:
+                return null;
+        }
+    }
+    else if (source instanceof Entity && !(source instanceof Player)) {
+        switch (permission) {
+            case "console":
+            case "operator":
+                return false;
+            case "member":
+                return true;
+            default:
+                return null;
+        }
+    }
+    else if (source instanceof Player) {
+        switch (permission) {
+            case "console":
+                return false;
+            case "operator":
+                if (source.isOp()) return true;
+                else return false;
+            case "member":
+                return true;
+            default:
+                return null;
+        }
+    }
+    else return null;
+}
+
 export class ChatCommandType {
-    constructor(id, prefix) {
-        if (!(typeof id === "string" && typeof prefix === "string")) throw new Error("idとprefixはともに文字列である必要があります");
+    constructor(id, prefix, internal = () => undefined) {
+        if (typeof id !== "string") throw new Error("idは文字列である必要があります");
+        if (typeof prefix !== "string") throw new Error("prefixは文字列である必要があります");
+        if (typeof internal !== "function") throw new Error("internalは関数である必要があります");
         this.id = id;
         this.prefix = prefix;
+        this.internal = internal;
         ChatCommandType.list.push(this);
     }
     check(command) {
@@ -20,31 +63,83 @@ export class ChatCommandType {
         const splited = StringFunctions.advancedSplit(command, " ", "\"");
         const commandName = splited[1];
         const commandArgsNotParsed = splited.slice(2);
-        const targetCommand = ChatCommand.list.find(cmd => cmd.name === commandName);
+        const targetCommand = ChatCommand.list.find(cmd => cmd.name === commandName && cmd.typeId === this.id);
+        const internalFlags = {
+            fail: false,
+            sendOutput: true
+        };
+        if (commandName === undefined || targetCommand === undefined || commandArgsNotParsed.length < (targetCommand?.arguments?.min ?? 0)) {
+            internalFlags.fail = true;
+        }
+        system.runTimeout(() => {
+            this.internal(new ChatCommandTypeExecuteData(source, { flags: internalFlags, typeId: this.id, commandName: commandName }));
+        });
         if (commandName === undefined) {
-            world.sendMessage(`@${source.name} ran ${this.id} type command: §cmissing command name`);
+            system.runTimeout(() => {
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command: §cmissing command name`);
+            });
             return false;
         }
         else if (targetCommand === undefined) {
-            world.sendMessage(`@${source.name} ran ${this.id} type command - ${commandName}: §cunknown command`);
+            system.runTimeout(() => {
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${commandName}: §cunknown command`);
+            });
+            return false;
+        }
+        else if (!permissionCheck(source, targetCommand.permission)) {
+            system.runTimeout(() => {
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${commandName}: §cinsufficient permission level`);
+            });
             return false;
         }
         else if (commandArgsNotParsed.length < targetCommand.arguments.min) {
-            world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}: §cmissing arguments`);
+            system.runTimeout(() => {
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}: §cmissing arguments`);
+            });
             return false;
         }
         else if (targetCommand) {
             const result = targetCommand.arguments.convert(commandArgsNotParsed);
-            const executeData = new ChatCommandExecuteData(source, result, { typeName: this.id, commandName: targetCommand.name });
+            const executeData = new ChatCommandExecuteData(source, result, { flags: internalFlags, typeId: this.id, commandName: targetCommand.name });
             system.runTimeout(() => {
                 let returner = targetCommand.run(executeData);
                 if (typeof returner === "object") returner = JSON.stringify(returner);
-                if (executeData.sendOutputInternal === true && returner !== undefined) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}: §a${returner}`);
-                else if (executeData.sendOutputInternal === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}`);
+                if (internalFlags.sendOutput === true && returner !== undefined) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}: §a${returner}`);
+                else if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}`);
             });
             return true;
         }
         return false;
+    }
+    openList(player) {
+        const commands = ChatCommand.list.filter(command => command.typeId === this.id);
+        const form = new ActionFormData().title("ChatCommand List").body("コマンド一覧");
+        for (const command of commands) {
+            form.button("§l§q" + command.name);
+        }
+        (function show() {
+            form.show(player).then(({ selection, cancelationReason }) => {
+                if (cancelationReason === "UserBusy") system.run(show);
+                if (selection === undefined) return;
+                const selected = commands[selection];
+                const description = [
+                    `コマンド名: ${selected.name}`,
+                    "",
+                    `実行に必要な引数の数: ${selected.arguments.min}以上`,
+                    "",
+                    `実行に必要な権限レベル: ${selected.permission}以上`,
+                    "",
+                    `引数: §3${JSON.stringify(selected.arguments.list, undefined, 4)}§r`,
+                    "",
+                    "内部処理: §q" + selected.run.toString().replace(/§/g, "(section)") + "§r"
+                ];
+                new ActionFormData().title("ChatCommand List - " + selected.name).body(description.join("\n"))
+                .button("§lBack", "textures/ui/back_button_default")
+                .show(player).then(({ selection }) => {
+                    if (selection === 0) show();
+                });
+            });
+        })();
     }
     static list = [];
 }
@@ -158,9 +253,8 @@ export class ChatCommandExecuteData {
         if (!Array.isArray(args)) throw new Error("argsはChatCommandExecuteArgument[]である必要があります");
         this.source = source;
         this.list = args;
-        this.sendOutputInternal = true;
-        this.failInternal = false;
-        this.typeName = messageOptions.typeName;
+        this.flags = messageOptions.flags;
+        this.typeId = messageOptions.typeId;
         this.commandName = messageOptions.commandName;
     }
     getArg(id) {
@@ -170,36 +264,62 @@ export class ChatCommandExecuteData {
         return this.list.map(arg => arg.value);
     }
     get sendOutput() {
-        return this.sendOutputInternal;
+        return this.flags.sendOutput
     }
     set sendOutput(value) {
         if (typeof value === "boolean") {
-            this.sendOutputInternal = value;
+            this.flags.sendOutput = value;
         }
     }
     get fail() {
-        return this.failInternal;
+        return this.flags.fail;
     }
     set fail(value) {
         if (typeof value === "boolean") {
-            this.failInternal = value;
+            this.flags.fail = value;
             if (value === true) {
-                world.sendMessage(`@${this.source.name} ran ${this.typeName} type command - ${this.commandName}: §cerror while executing command`);
+                if (this.flags.sendOutput === true) world.sendMessage(`@${this.source.name} ran ${this.typeId} type command - ${this.commandName}: §cerror while executing command`);
                 throw "§cerror while executing command§f";
             }
         }
     }
 }
 
+export class ChatCommandTypeExecuteData {
+    constructor(source, messageOptions) {
+        if (!(source instanceof Dimension || source instanceof Player || source instanceof Entity)) throw new Error("sourceはDimensionかPlayerかEntityである必要があります");
+        this.source = source;
+        this.flags = messageOptions.flags;
+        this.typeId = messageOptions.typeId;
+        this.commandName = messageOptions.commandName;
+    }
+    get sendOutput() {
+        return this.flags.sendOutput
+    }
+    set sendOutput(value) {
+        if (typeof value === "boolean") {
+            this.flags.sendOutput = value;
+        }
+    }
+    get fail() {
+        return this.flags.fail;
+    }
+    set fail(value) {
+        throw `§ccannot set "fail" to ${value} - property "fail" is read-only`;
+    }
+}
+
 export class ChatCommand {
-    constructor(type, name, internal, argumentOptions = new ChatCommandArguments()) {
+    constructor(type, name, internal, options = { argument: new ChatCommandArguments(), permission: "member" }) {
         if (!(type instanceof ChatCommandType)) throw new Error("typeはChatCommandTypeである必要があります");
         if (typeof name !== "string") throw new Error("nameは文字列である必要があります");
         if (typeof internal !== "function") throw new Error("internalは関数である必要があります");
-        if (argumentOptions !== undefined && typeof argumentOptions !== "object") throw new Error("argumentOptionsはオブジェクトである必要があります");
+        if (options !== undefined && typeof options !== "object") throw new Error("optionsはオブジェクトである必要があります");
         this.name = name;
         this.run = internal;
-        this.arguments = argumentOptions;
+        this.arguments = options.argument ?? new ChatCommandArguments();
+        this.permission = options.permission ?? "member";
+        this.typeId = type.id;
     }
     static list = [];
     static register(command) {

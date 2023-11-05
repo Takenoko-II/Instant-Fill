@@ -40,17 +40,21 @@ export function openMainForm(player) {
         }
         let options = { matchingBlock: undefined };
         if (formValues[1] === true) options.matchingBlock = BlockPermutation.resolve("minecraft:air");
-        try { if (formValues[2] !== "" && formValues[2] !== undefined) options.matchingBlock = BlockPermutation.resolve(formValues[2], (formValues[2] === idReplaced) ? statesReplaced : undefined); }
+        try {
+            if (formValues[2] !== "" && formValues[2] !== undefined) options.matchingBlock = BlockPermutation.resolve(formValues[2], (formValues[2] === idReplaced) ? statesReplaced : undefined);
+        }
         catch (e) {
+            console.warn(e);
             player.sendMessage(`§c${formValues[2]}は無効なブロックです`);
             return;
         }
-    
         const newStructure = new StructureData(player, { x: x1, y: y1, z: z1 });
         const { successCount } = player.runCommand(`structure save "${newStructure.name}" ${x1} ${y1} ${z1} ${x2} ${y2} ${z2} false disk true`);
         if (successCount > 0) {
             player.setDynamicProperty("blockId", formValues[0]);
             player.setDynamicProperty("blockIdReplaced", formValues[2]);
+            if (formValues[0] !== id) player.setDynamicProperty("blockStates", "{}");
+            if (formValues[2] !== idReplaced) player.setDynamicProperty("blockStatesReplaced", "{}");
             newStructure.save();
             player.sendMessage("地形を保存しました §7(保存id: " + newStructure.count.toString() + ")");
     

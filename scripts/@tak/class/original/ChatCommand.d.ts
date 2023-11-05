@@ -5,8 +5,9 @@ export class ChatCommandType {
      * コマンドの種類を新たに作成します。
      * @param id コマンドの種類のid。
      * @param prefix この種類のコマンドの接頭辞。
+     * @param internal この種類のコマンドが実行された際に呼び出される関数。
      */
-    constructor(id: string, prefix: string);
+    constructor(id: string, prefix: string, internal?: (arg: ChatCommandTypeExecuteData) => void);
     /**
      * コマンドの種類のid。
      */
@@ -27,8 +28,13 @@ export class ChatCommandType {
      */
     parse(source: Dimension | Player | Entity, command: string): boolean | null;
     /**
+     * この種類のコマンドの一覧を表示します。
+     */
+    openList(player: Player): void;
+    /**
      * コマンドの種類のリスト。
      */
+    static readonly list: ChatCommandType[];
 }
 
 export class ChatCommandArguments {
@@ -76,7 +82,7 @@ export class ChatCommand {
      * @param internal コマンドが実行されたときに呼び出される関数。
      * @param argumentOptions このコマンドの引数に関するオプション。
      */
-    constructor(type: ChatCommandType, name: string, internal: (arg: ChatCommandExecuteData) => any, argumentOptions: ChatCommandArguments);
+    constructor(type: ChatCommandType, name: string, internal: (arg: ChatCommandExecuteData) => any, options: { permission: "member" | "operator" | "console", argument: ChatCommandArguments });
     /**
      * コマンド名。
      */
@@ -89,6 +95,14 @@ export class ChatCommand {
      * このコマンドの引数に関するデータ。
      */
     readonly arguments: ChatCommandArguments;
+    /**
+     * このコマンドの実行に必要な権限レベル。
+     */
+    readonly permission: "member" | "operator" | "console";
+    /**
+     * このコマンドの種類のid。
+     */
+    readonly typeId: string;
     /**
      * 登録されているコマンドのリスト。
      */
@@ -107,7 +121,7 @@ export class ChatCommand {
 }
 
 export class ChatCommandExecuteData {
-    constructor(source:Dimension | Player | Entity , args: ChatCommandExecuteArgument[], messageOptions: ChatCommandErrorMessageData);
+    constructor(source: Dimension | Player | Entity, args: ChatCommandExecuteArgument[], messageOptions: ChatCommandErrorMessageData);
     /**
      * コマンドの実行者。
      */
@@ -128,6 +142,14 @@ export class ChatCommandExecuteData {
      * コマンドの実行が失敗するかどうか。
      */
     fail: boolean;
+    /**
+     * コマンドの種類のid。
+     */
+    readonly typeId: string;
+    /**
+     * コマンド名。
+     */
+    readonly commandName: string;
 }
 
 interface ChatCommandExecuteArgument {
@@ -143,9 +165,37 @@ interface ChatCommandExecuteArgument {
 
 interface ChatCommandErrorMessageData {
     /**
-     * コマンドの種類の名前。
+     * コマンドの種類のid。
      */
-    readonly typeName: string;
+    readonly typeId: string;
+    /**
+     * コマンド名。
+     */
+    readonly commandName: string;
+    /**
+     * コマンドの失敗・実行結果通知に関するフラグ。
+     */
+    readonly flags: { fail: boolean, sendOutput: boolean };
+}
+
+export class ChatCommandTypeExecuteData {
+    constructor(source: Dimension | Player | Entity, messageOptions: ChatCommandErrorMessageData);
+    /**
+     * コマンドの実行者。
+     */
+    readonly source: Dimension | Player | Entity;
+    /**
+     * コマンドの実行結果を通知するかどうか。
+     */
+    sendOutput: boolean;
+    /**
+     * コマンドの実行が失敗するかどうか。
+     */
+    readonly fail: boolean;
+    /**
+     * コマンドの種類のid。
+     */
+    readonly typeId: string;
     /**
      * コマンド名。
      */

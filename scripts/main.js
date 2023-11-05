@@ -6,7 +6,7 @@ import "./interact.js";
 
 import "./itemUse.js";
 
-import { world, system, MolangVariableMap, Player, ItemStack } from "@minecraft/server";
+import { world, system, MolangVariableMap, Player } from "@minecraft/server";
 
 import { isInsFillTool, particleSettingsDefault, showRange, subscribeAsInsFillTool, undo } from "./api/index.js";
 
@@ -45,13 +45,6 @@ ChatCommand.register(new ChatCommand(type, "subscribe", data => {
     else return "アイテムを手に持ってください";
 }));
 
-ChatCommand.register(new ChatCommand(type, "give", data => {
-    const item = new ItemStack(data.getArg("itemId"), data.getArg("itemCount"));
-    if (data.source instanceof Player) {
-        data.source.getComponent("inventory").container.addItem(item);
-        return true;
-    }
-    else data.fail = true;
-}, new ChatCommandArguments(1, [
-    { id: "itemId", type: "string" }, { id: "itemCount", type: "number" }
-])));
+ChatCommand.register(new ChatCommand(type, "help", ({ source }) => {
+    type.openList(source);
+}));
