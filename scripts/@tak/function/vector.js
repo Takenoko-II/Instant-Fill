@@ -33,7 +33,9 @@ function getRotationFromVector(vector) {
 function isVector3(value) {
     if (typeof value !== "object") return false;
     const propertyNames = Object.getOwnPropertyNames(value);
-    if (propertyNames.every(e => ["x", "y", "z"].includes(e) && typeof value[e] === "number")) return true;
+    if (propertyNames.every(e => ["x", "y", "z"].includes(e) && typeof value[e] === "number") && ["x", "y", "z"].every(c => propertyNames.includes(c))) {
+        return true;
+    }
     return false;
 }
 

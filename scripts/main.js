@@ -10,7 +10,7 @@ import { world, system, MolangVariableMap, Player } from "@minecraft/server";
 
 import { isInsFillTool, particleSettingsDefault, showRange, subscribeAsInsFillTool, undo } from "./api/index.js";
 
-import { ChatCommand, ChatCommandArguments, ChatCommandType } from "./@tak/extender";
+import { ChatCommand, ChatCommandArguments, ChatCommandType, vectorFunctions } from "./@tak/extender";
 
 system.runInterval(() => {
     for (const player of world.getAllPlayers()) {

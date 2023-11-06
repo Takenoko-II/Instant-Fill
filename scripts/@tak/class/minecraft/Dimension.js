@@ -11,7 +11,7 @@ Dimension.prototype.setBlock = function(location, id, blockStates) {
 Dimension.prototype.tryFillBlocks = function(bigin, end, block, options) {
     if (!vectorFunctions.isVector3(bigin)) return "第一引数の型が正しくありません"
     else if (!vectorFunctions.isVector3(end)) return "第二引数の型が正しくありません"
-    else if (!(block instanceof BlockPermutation) || !(block instanceof BlockType) || typeof block !== "string") return "第三引数の型が正しくありません"
+    else if (!(block instanceof BlockPermutation) && !(block instanceof BlockType) && typeof block !== "string") return "第三引数の型が正しくありません"
     else if (typeof options !== "object") return "第四引数の型が正しくありません";
     try {
         const replacedBlocksCount = this.fillBlocks(bigin, end, block, options);
