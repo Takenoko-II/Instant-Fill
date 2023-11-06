@@ -2,9 +2,9 @@
   "format_version": 2,
     "header": {
         "description": "",
-        "name": "§lInstant Fill Ver 3.1",
+        "name": "§lInstant Fill Ver 3.2",
         "uuid": "951c6bad-f00d-4c5f-b20d-2cbdd41c7dc1",
-        "version": [ 0, 3, 1 ],
+        "version": [ 0, 3, 2 ],
         "min_engine_version": [ 1, 20, 40 ]
     },
     "modules": [
