@@ -76,25 +76,25 @@ export class ChatCommandType {
         });
         if (commandName === undefined) {
             system.runTimeout(() => {
-                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command: §cmissing command name`);
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name ?? source.typeId ?? source.id} ran ${this.id} type command: §cmissing command name`);
             });
             return false;
         }
         else if (targetCommand === undefined) {
             system.runTimeout(() => {
-                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${commandName}: §cunknown command`);
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name ?? source.typeId ?? source.id} ran ${this.id} type command - ${commandName}: §cunknown command`);
             });
             return false;
         }
         else if (!permissionCheck(source, targetCommand.permission)) {
             system.runTimeout(() => {
-                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${commandName}: §cinsufficient permission level`);
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name ?? source.typeId ?? source.id} ran ${this.id} type command - ${commandName}: §cinsufficient permission level`);
             });
             return false;
         }
         else if (commandArgsNotParsed.length < targetCommand.arguments.min) {
             system.runTimeout(() => {
-                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}: §cmissing arguments`);
+                if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name ?? source.typeId ?? source.id} ran ${this.id} type command - ${targetCommand.name}: §cmissing arguments`);
             });
             return false;
         }
@@ -104,8 +104,8 @@ export class ChatCommandType {
             system.runTimeout(() => {
                 let returner = targetCommand.run(executeData);
                 if (typeof returner === "object") returner = JSON.stringify(returner);
-                if (internalFlags.sendOutput === true && returner !== undefined) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}: §a${returner}`);
-                else if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name} ran ${this.id} type command - ${targetCommand.name}`);
+                if (internalFlags.sendOutput === true && returner !== undefined) world.sendMessage(`@${source.name ?? source.typeId ?? source.id} ran ${this.id} type command - ${targetCommand.name}: §a${returner}`);
+                else if (internalFlags.sendOutput === true) world.sendMessage(`@${source.name ?? source.typeId ?? source.id} ran ${this.id} type command - ${targetCommand.name}`);
             });
             return true;
         }
@@ -278,7 +278,7 @@ export class ChatCommandExecuteData {
         if (typeof value === "boolean") {
             this.flags.fail = value;
             if (value === true) {
-                if (this.flags.sendOutput === true) world.sendMessage(`@${this.source.name} ran ${this.typeId} type command - ${this.commandName}: §cerror while executing command`);
+                if (this.flags.sendOutput === true) world.sendMessage(`@${this.source.name ?? this.source.typeId ?? this.source.id} ran ${this.typeId} type command - ${this.commandName}: §cerror while executing command`);
                 throw "§cerror while executing command§f";
             }
         }
