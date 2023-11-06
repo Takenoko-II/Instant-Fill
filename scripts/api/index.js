@@ -75,13 +75,13 @@ export function showRange(player, particleOptions = { id: "minecraft:endrod" }) 
     const max = Vector.max(start, end);
     if (!(min && max)) return;
     const vectors = [];
-    for (let x = min.x; x <= max.x + 1; x+=0.5) {
+    for (let x = min.x; x <= max.x + 1; x += 0.5) {
         vectors.push({ x, y: min.y, z: min.z }, { x, y: min.y, z: max.z + 1 }, { x, y: max.y + 1, z: min.z }, { x, y: max.y + 1, z: max.z + 1 });
     }
-    for (let y = min.y; y <= max.y + 1; y+=0.5) {
+    for (let y = min.y; y <= max.y + 1; y += 0.5) {
         vectors.push({ x: min.x, y, z: min.z }, { x: min.x, y, z: max.z + 1 }, { x: max.x + 1, y, z: min.z }, { x: max.x + 1, y, z: max.z + 1 });
     }
-    for (let z = min.z; z <= max.z + 1; z+=0.5) {
+    for (let z = min.z; z <= max.z + 1; z += 0.5) {
         vectors.push({ x: min.x, y: min.y, z }, { x: min.x, y: max.y + 1, z }, { x: max.x + 1, y: min.y, z }, { x: max.x + 1, y: max.y + 1, z });
     }
     for (const vector of vectors) {

@@ -1,6 +1,6 @@
 # Instant-Fill
 
-## Instant Fill Ver 3.2
+## Instant Fill Ver 3.1
 
 チャットやアイテムを用いてfillを簡単に行います。
 
@@ -55,7 +55,7 @@ fill後にその範囲を編集しても、fillする直前の状態に戻りま
 
 ## License
 
-Instant-Fill Version 3.2 is under [Mit license](https://en.wikipedia.org/wiki/MIT_License).
+Instant-Fill Version 3.0 is under [Mit license](https://en.wikipedia.org/wiki/MIT_License).
 
 ## Author
 

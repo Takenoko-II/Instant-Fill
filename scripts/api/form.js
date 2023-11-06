@@ -5,6 +5,7 @@ import { ActionFormData, MessageFormData, ModalFormData } from "@minecraft/serve
 import { StructureData, particleSettingsDefault } from "./index";
 
 export function openMainForm(player) {
+    if (!(player instanceof Player)) return;
     const start = player.getDynamicProperty("start");
     const end = player.getDynamicProperty("end");
     const id = player.getDynamicProperty("blockId");
@@ -51,14 +52,19 @@ export function openMainForm(player) {
         const newStructure = new StructureData(player, { x: x1, y: y1, z: z1 });
         const { successCount } = player.runCommand(`structure save "${newStructure.name}" ${x1} ${y1} ${z1} ${x2} ${y2} ${z2} false disk true`);
         if (successCount > 0) {
-            player.setDynamicProperty("blockId", formValues[0]);
-            player.setDynamicProperty("blockIdReplaced", formValues[2]);
-            if (formValues[0] !== id) player.setDynamicProperty("blockStates", "{}");
-            if (formValues[2] !== idReplaced) player.setDynamicProperty("blockStatesReplaced", "{}");
-            newStructure.save();
-            player.sendMessage("地形を保存しました §7(保存id: " + newStructure.count.toString() + ")");
-    
-            player.dimension.fillBlocks(start, end, block, options);
+            const replacedBlockCount = player.dimension.tryFillBlocks(start, end, block, options);
+            if (typeof replacedBlockCount === "number" && replacedBlockCount > 0) {
+                player.setDynamicProperty("blockId", formValues[0]);
+                player.setDynamicProperty("blockIdReplaced", formValues[2]);
+                if (formValues[0] !== id) player.setDynamicProperty("blockStates", "{}");
+                if (formValues[2] !== idReplaced) player.setDynamicProperty("blockStatesReplaced", "{}");
+                newStructure.save();
+                player.sendMessage("地形を保存しました §7(保存id: " + newStructure.count.toString() + ")");
+            }
+            else {
+                player.runCommand(`structure delete "${newStructure.name}"`);
+                player.sendMessage("§cfillに失敗したため、地形の保存をキャンセルしました");
+            }
         }
         else {
             player.sendMessage("§c地形の保存に失敗したため、fillをキャンセルしました");

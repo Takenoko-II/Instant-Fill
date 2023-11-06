@@ -45,6 +45,7 @@ ChatCommand.register(new ChatCommand(type, "subscribe", data => {
     else return "アイテムを手に持ってください";
 }));
 
-ChatCommand.register(new ChatCommand(type, "help", ({ source }) => {
-    type.openList(source);
+ChatCommand.register(new ChatCommand(type, "help", data => {
+    if (!(source instanceof Player)) data.fail = true;
+    type.form.show(data.source);
 }));

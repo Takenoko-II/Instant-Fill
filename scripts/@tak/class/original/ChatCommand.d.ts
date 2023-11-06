@@ -15,7 +15,7 @@ export class ChatCommandType {
     /**
      * この種類のコマンドの接頭辞。
      */
-    readonly prefix:string;
+    readonly prefix: string;
     /**
      * 文字列を解析し、この種類のコマンドであればtrueを返します。
      * @param command 解析する文字列。
@@ -28,13 +28,21 @@ export class ChatCommandType {
      */
     parse(source: Dimension | Player | Entity, command: string): boolean | null;
     /**
-     * この種類のコマンドの一覧を表示します。
+     * この種類のコマンドのリストのフォーム。
      */
-    openList(player: Player): void;
+    readonly form: ChatCommandTypeForm;
     /**
      * コマンドの種類のリスト。
      */
     static readonly list: ChatCommandType[];
+}
+
+interface ChatCommandTypeForm {
+    /**
+     * フォームを表示します。
+     * @param player フォームを表示するプレイヤー。
+     */
+    show(player: Player): void;
 }
 
 export class ChatCommandArguments {

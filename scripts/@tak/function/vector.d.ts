@@ -29,13 +29,17 @@ interface VectorFunctions {
      * @param vector 任意のベクトル。
      * @param magnification ベクトルの長さの倍率。
      */
-    getUnitVector(vector: Vector3, magnification?: number): Vector
-
+    getUnitVector(vector: Vector3, magnification?: number): Vector;
     /**
      * 単位ベクトルを回転に変換します。
      * @param vector 任意の単位ベクトル。
      */
-    getRotationFromVector(vector: Vector3): Vector2
+    getRotationFromVector(vector: Vector3): Vector2;
+    /**
+     * Vector3であるか否かを返します。
+     * @param value 任意の値。
+     */
+    isVector3(value: any): boolean;
 }
 
 export const vectorFunctions: VectorFunctions;

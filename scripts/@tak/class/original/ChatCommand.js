@@ -15,17 +15,6 @@ function permissionCheck(source, permission) {
                 return null;
         }
     }
-    else if (source instanceof Entity && !(source instanceof Player)) {
-        switch (permission) {
-            case "console":
-            case "operator":
-                return false;
-            case "member":
-                return true;
-            default:
-                return null;
-        }
-    }
     else if (source instanceof Player) {
         switch (permission) {
             case "console":
@@ -33,6 +22,17 @@ function permissionCheck(source, permission) {
             case "operator":
                 if (source.isOp()) return true;
                 else return false;
+            case "member":
+                return true;
+            default:
+                return null;
+        }
+    }
+    else if (source instanceof Entity) {
+        switch (permission) {
+            case "console":
+            case "operator":
+                return false;
             case "member":
                 return true;
             default:
@@ -111,13 +111,13 @@ export class ChatCommandType {
         }
         return false;
     }
-    openList(player) {
-        const commands = ChatCommand.list.filter(command => command.typeId === this.id);
-        const form = new ActionFormData().title("ChatCommand List").body("コマンド一覧");
-        for (const command of commands) {
-            form.button("§l§q" + command.name);
-        }
-        (function show() {
+    form = {
+        show: (player) => {
+            const commands = ChatCommand.list.filter(command => command.typeId === this.id);
+            const form = new ActionFormData().title("ChatCommand List").body("コマンド一覧");
+            for (const command of commands) {
+                form.button("§l§q" + command.name);
+            }
             form.show(player).then(({ selection, cancelationReason }) => {
                 if (cancelationReason === "UserBusy") system.run(show);
                 if (selection === undefined) return;
@@ -139,7 +139,7 @@ export class ChatCommandType {
                     if (selection === 0) show();
                 });
             });
-        })();
+        }
     }
     static list = [];
 }
