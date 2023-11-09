@@ -39,10 +39,16 @@ export class ChatCommandType {
 
 interface ChatCommandTypeForm {
     /**
-     * フォームを表示します。
+     * 特定のコマンドのフォームを表示します。    
+     * コマンドが存在しなかった場合のみ偽を返します。
      * @param player フォームを表示するプレイヤー。
      */
-    show(player: Player): void;
+    showSpecific: (player: Player, commandName: string) => boolean;
+    /**
+     * この種類の全コマンドのフォームを表示します。
+     * @param player フォームを表示するプレイヤー。
+     */
+    showList: (player: Player) => void;
 }
 
 export class ChatCommandArguments {

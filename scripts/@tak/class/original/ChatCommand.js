@@ -112,33 +112,40 @@ export class ChatCommandType {
         return false;
     }
     form = {
-        show: (player) => {
+        showList: (player) => {
             const commands = ChatCommand.list.filter(command => command.typeId === this.id);
             const form = new ActionFormData().title("ChatCommand List").body("コマンド一覧");
             for (const command of commands) {
                 form.button("§l§q" + command.name);
             }
             form.show(player).then(({ selection, cancelationReason }) => {
-                if (cancelationReason === "UserBusy") system.run(show);
+                if (cancelationReason === "UserBusy") system.run(() => this.form.showList(player));
                 if (selection === undefined) return;
-                const selected = commands[selection];
-                const description = [
-                    `コマンド名: ${selected.name}`,
-                    "",
-                    `実行に必要な引数の数: ${selected.arguments.min}以上`,
-                    "",
-                    `実行に必要な権限レベル: ${selected.permission}以上`,
-                    "",
-                    `引数: §3${JSON.stringify(selected.arguments.list, undefined, 4)}§r`,
-                    "",
-                    "内部処理: §q" + selected.run.toString().replace(/§/g, "(section)") + "§r"
-                ];
-                new ActionFormData().title("ChatCommand List - " + selected.name).body(description.join("\n"))
-                .button("§lBack", "textures/ui/back_button_default")
-                .show(player).then(({ selection }) => {
-                    if (selection === 0) show();
-                });
+                const commandName = commands[selection].name;
+                this.form.showSpecific(player, commandName);
             });
+        },
+        showSpecific: (player, commandName) => {
+            const specificCommand = ChatCommand.list.find(command => command.name === commandName);
+            if (!specificCommand) return false;
+            const description = [
+                `コマンド名: ${specificCommand.name}`,
+                "",
+                `実行に必要な引数の数: ${specificCommand.arguments.min}以上`,
+                "",
+                `実行に必要な権限レベル: ${specificCommand.permission}以上`,
+                "",
+                `引数: §3${JSON.stringify(specificCommand.arguments.list, undefined, 4)}§r`,
+                "",
+                "内部処理: §q" + specificCommand.run.toString().replace(/§/g, "(section)") + "§r"
+            ];
+            new ActionFormData().title("ChatCommand List - " + specificCommand.name).body(description.join("\n"))
+            .button("§lBack", "textures/ui/back_button_default")
+            .show(player).then(({ selection, cancelationReason }) => {
+                if (cancelationReason === "UserBusy") system.run(() => this.form.showSpecific(player, commandName));
+                else if (selection === 0) this.form.showList(player);
+            });
+            return true;
         }
     }
     static list = [];
@@ -160,7 +167,8 @@ export class ChatCommandArguments {
             let value;
             switch (argument.type) {
                 case "string": {
-                    value = String(targetString);
+                    if (targetString === undefined) value = undefined;
+                    else value = String(targetString);
                     break;
                 }
                 case "number": {

@@ -10,7 +10,7 @@ import { world, system, MolangVariableMap, Player } from "@minecraft/server";
 
 import { isInsFillTool, particleSettingsDefault, showRange, subscribeAsInsFillTool, undo } from "./api/index.js";
 
-import { ChatCommand, ChatCommandArguments, ChatCommandType, vectorFunctions } from "./@tak/extender";
+import { ChatCommand, ChatCommandArguments, ChatCommandType } from "./@tak/extender";
 
 system.runInterval(() => {
     for (const player of world.getAllPlayers()) {
@@ -45,7 +45,15 @@ ChatCommand.register(new ChatCommand(type, "subscribe", data => {
     else return "アイテムを手に持ってください";
 }));
 
-ChatCommand.register(new ChatCommand(type, "help", data => {
-    if (!(source instanceof Player)) data.fail = true;
-    type.form.show(data.source);
+ChatCommand.register(new ChatCommand(type, "help",data => {
+    if (!(data.source instanceof Player)) data.fail = true;
+    if (data.getArg("command")) {
+        const existFlag = type.form.showSpecific(data.source, data.getArg("command"));
+        if (!existFlag) data.fail = true;
+    }
+    else type.form.showList(data.source);
+}, {
+    argument: new ChatCommandArguments(0, [
+        { id: "command", type: "string" }
+    ])
 }));
